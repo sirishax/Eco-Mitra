@@ -1,4 +1,4 @@
-# Eco-Mitra-main
+# Eco-Mitra
 sustainability shopping assistence
 
 To run this application, have give two commands in powershell, those are 
