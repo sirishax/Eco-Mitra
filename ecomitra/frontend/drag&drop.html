@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainable Sorting Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: url('https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&q=80') center/cover no-repeat fixed;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.8) 0%, rgba(39, 174, 96, 0.8) 100%);
+            z-index: 0;
+        }
+        .main-bg-gradient {
+            position: fixed;
+            z-index: 1;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 70% 20%, #60a5fa33 0%, transparent 60%),
+                        radial-gradient(circle at 20% 80%, #2563eb22 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .game-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255,255,255,0.12);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            padding: 2rem 2.5rem 2.5rem 2.5rem;
+            max-width: 420px;
+            width: 100%;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        h1 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .score {
+            color: #fff;
+            font-size: 1.2rem;
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+        }
+        .round {
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .product-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0 2.5rem 0;
+        }
+        .product {
+            width: 90px;
+            height: 90px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: grab;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            border: 3px solid #fff;
+            transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+            user-select: none;
+        }
+        .product.dragging {
+            opacity: 0.5;
+            box-shadow: 0 8px 32px rgba(46,204,113,0.2);
+            transform: scale(1.1);
+        }
+        .bins {
+            display: flex;
+            justify-content: space-between;
+            gap: 2.5rem;
+            margin-top: 2rem;
+        }
+        .bin {
+            width: 110px;
+            height: 110px;
+            background: linear-gradient(135deg, #22c55e 60%, #2563eb 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(46,204,113,0.2);
+            border: 4px solid #fff;
+            transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .bin.trash {
+            background: linear-gradient(135deg, #e74c3c 60%, #c0392b 100%);
+        }
+        .bin.over {
+            box-shadow: 0 0 0 8px #22c55e55;
+            border: 4px solid #2563eb;
+        }
+        .bin.trash.over {
+            box-shadow: 0 0 0 8px #e74c3c55;
+            border: 4px solid #c0392b;
+        }
+        .bin-label {
+            color: #fff;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .feedback {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            min-height: 28px;
+            color: #fff;
+            transition: color 0.3s;
+        }
+        .feedback.correct {
+            color: #22c55e;
+            animation: pop 0.4s;
+        }
+        .feedback.incorrect {
+            color: #e74c3c;
+            animation: shake 0.4s;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            border-radius: 20px;
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+        }
+        .game-over.show {
+            display: flex;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .final-score {
+            font-size: 2.2rem;
+            color: #22c55e;
+            margin: 1rem 0;
+            font-weight: bold;
+        }
+        .play-again-btn {
+            background: linear-gradient(45deg, #2563eb, #22c55e);
+            color: #fff;
+            border: none;
+            padding: 0.8rem 2.2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.2rem;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+            transition: background 0.2s, transform 0.2s;
+        }
+        .play-again-btn:hover {
+            background: linear-gradient(45deg, #22c55e, #2563eb);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 1rem 0.5rem 1.5rem 0.5rem;
+            }
+            .bins {
+                gap: 1rem;
+            }
+            .product {
+                width: 70px; height: 70px; font-size: 2rem;
+            }
+            .bin {
+                width: 80px; height: 80px; font-size: 1.5rem;
+            }
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .back-btn i {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-bg-gradient"></div>
+    <div class="game-container">
+        <h1>Sustainable Sorting Game</h1>
+        <div class="score" id="score">Score: 0</div>
+        <div class="round" id="round">Round 1 / 10</div>
+        <div class="product-area">
+            <div class="product" id="product" draggable="true"></div>
+        </div>
+        <div class="bins">
+            <div class="bin" id="sustainable-bin">🌱</div>
+            <div class="bin trash" id="trash-bin">🗑️</div>
+        </div>
+        <div class="bins">
+            <div class="bin-label">Sustainable Bin</div>
+            <div class="bin-label">Trash Bin</div>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="game-over" id="game-over">
+            <div class="final-score" id="final-score"></div>
+            <div>Game Over! Thanks for sorting the products.</div>
+            <button class="play-again-btn" id="play-again-btn">Play Again</button>
+        </div>
+    </div>
+    <a href="index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Home
+    </a>
+    <script>
+        const sustainableProducts = [
+            { icon: '🥦', name: 'Broccoli', sustainable: true },
+            { icon: '🍎', name: 'Apple', sustainable: true },
+            { icon: '🌱', name: 'Sprout', sustainable: true },
+            { icon: '♻️', name: 'Recycled', sustainable: true },
+            { icon: '🧴', name: 'Eco Bottle', sustainable: true },
+            { icon: '🪴', name: 'Plant Pot', sustainable: true }
+        ];
+        const nonSustainableProducts = [
+            { icon: '🥤', name: 'Plastic Cup', sustainable: false },
+            { icon: '🍔', name: 'Fast Food', sustainable: false },
+            { icon: '🛍️', name: 'Plastic Bag', sustainable: false },
+            { icon: '🚬', name: 'Cigarette', sustainable: false },
+            { icon: '🧃', name: 'Juice Box', sustainable: false },
+            { icon: '🍟', name: 'Fries', sustainable: false }
+        ];
+        let score = 0;
+        let round = 1;
+        const totalRounds = 10;
+        let currentProduct = null;
+        let gameActive = true;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function getRandomProduct() {
+            const all = [...sustainableProducts, ...nonSustainableProducts];
+            return all[Math.floor(Math.random() * all.length)];
+        }
+
+        function showProduct() {
+            currentProduct = getRandomProduct();
+            const productDiv = document.getElementById('product');
+            productDiv.innerHTML = currentProduct.icon;
+            productDiv.title = currentProduct.name;
+            productDiv.classList.remove('dragging');
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Score: ${score}`;
+        }
+
+        function updateRound() {
+            document.getElementById('round').textContent = `Round ${round} / ${totalRounds}`;
+        }
+
+        function showFeedback(isCorrect) {
+            const feedback = document.getElementById('feedback');
+            if (isCorrect) {
+                feedback.textContent = 'Correct!';
+                feedback.className = 'feedback correct';
+            } else {
+                feedback.textContent = 'Oops!';
+                feedback.className = 'feedback incorrect';
+            }
+            setTimeout(() => {
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+            }, 800);
+        }
+
+        function nextRound() {
+            round++;
+            if (round > totalRounds) {
+                endGame();
+            } else {
+                updateRound();
+                showProduct();
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('final-score').textContent = `Your Score: ${score} / ${totalRounds}`;
+            document.getElementById('game-over').classList.add('show');
+        }
+
+        function startGame() {
+            score = 0;
+            round = 1;
+            gameActive = true;
+            updateScore();
+            updateRound();
+            showProduct();
+            document.getElementById('game-over').classList.remove('show');
+            document.getElementById('feedback').textContent = '';
+        }
+
+        // Drag and drop logic
+        const productDiv = document.getElementById('product');
+        productDiv.addEventListener('dragstart', (e) => {
+            if (!gameActive) return e.preventDefault();
+            productDiv.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', 'product');
+        });
+        productDiv.addEventListener('dragend', () => {
+            productDiv.classList.remove('dragging');
+        });
+
+        function handleDrop(binType) {
+            if (!gameActive) return;
+            const isCorrect = (binType === 'sustainable' && currentProduct.sustainable) ||
+                              (binType === 'trash' && !currentProduct.sustainable);
+            if (isCorrect) score++;
+            showFeedback(isCorrect);
+            setTimeout(nextRound, 600);
+        }
+
+        const sustainableBin = document.getElementById('sustainable-bin');
+        const trashBin = document.getElementById('trash-bin');
+        [sustainableBin, trashBin].forEach((bin) => {
+            bin.addEventListener('dragover', (e) => {
+                if (!gameActive) return;
+                e.preventDefault();
+                bin.classList.add('over');
+            });
+            bin.addEventListener('dragleave', () => {
+                bin.classList.remove('over');
+            });
+            bin.addEventListener('drop', (e) => {
+                e.preventDefault();
+                bin.classList.remove('over');
+                handleDrop(bin.id === 'sustainable-bin' ? 'sustainable' : 'trash');
+            });
+        });
+
+        document.getElementById('play-again-btn').onclick = startGame;
+        // Start the game on load
+        startGame();
+    </script>
+</body>
+</html>

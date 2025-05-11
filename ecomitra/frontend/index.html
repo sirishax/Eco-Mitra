@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Mitra - Product Sustainability Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        /* Navigation Bar Animations */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-logo i {
+            color: #22c55e;
+            font-size: 1.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-logo:hover i {
+            transform: rotate(15deg);
+        }
+
+        .nav-link {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .logout-btn {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .logout-btn:hover::before {
+            left: 100%;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(90deg, #1746a2 0%, #2563eb 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            color: white;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                animation: slideDown 0.3s ease-out;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-auth {
+                margin-left: 0;
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .logout-btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: url('https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&q=80') center/cover no-repeat fixed;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.8) 0%, rgba(39, 174, 96, 0.8) 100%);
+            z-index: 0;
+        }
+
+        .main-bg-gradient {
+            position: fixed;
+            z-index: 1;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 70% 20%, #60a5fa33 0%, transparent 60%),
+                        radial-gradient(circle at 20% 80%, #2563eb22 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .game-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .game-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+
+        .game-link i {
+            font-size: 1.1em;
+            transition: transform 0.3s ease;
+        }
+
+        .game-link:hover i {
+            transform: rotate(15deg);
+        }
+
+        .dropdown {
+            position: relative;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .dropdown:hover, .dropdown:focus-within {
+            color: var(--accent);
+        }
+        .dropdown i {
+            margin-left: 6px;
+            font-size: 0.9em;
+            transition: transform 0.3s;
+        }
+        .dropdown:hover i, .dropdown:focus-within i {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            min-width: 210px;
+            box-shadow: 0 8px 24px rgba(37,99,235,0.10);
+            border-radius: 12px;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 1001;
+            flex-direction: column;
+            padding: 0.5rem 0;
+            border: 1px solid rgba(255,255,255,0.18);
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .dropdown:hover .dropdown-content,
+        .dropdown:focus-within .dropdown-content {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .dropdown-content a {
+            color: #222;
+            padding: 0.85rem 1.5rem 0.85rem 2.2rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            border-radius: 8px;
+            transition: background 0.2s, color 0.2s, padding-left 0.2s;
+            font-size: 1.05rem;
+            position: relative;
+        }
+        .dropdown-content a i {
+            font-size: 1.1em;
+            color: #22c55e;
+            margin-right: 0.5em;
+        }
+        .dropdown-content a:hover {
+            background: rgba(46,204,113,0.13);
+            color: #222;
+            padding-left: 2.7rem;
+        }
+        @media (max-width: 768px) {
+            .dropdown-content {
+                position: static;
+                min-width: 100%;
+                box-shadow: none;
+                border-radius: 0;
+                background: none;
+                padding: 0;
+                border: none;
+            }
+            .dropdown-content a {
+                padding: 0.7rem 0.5rem 0.7rem 2.2rem;
+            }
+        }
+        .welcome-card.glass-card {
+            background: #C7F6B6;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            max-width: 420px;
+            width: 100%;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        .upload-card.glass-card {
+            background: #C7F6B6;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            max-width: 420px;
+            width: 100%;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        .analysis-card.glass-card {
+            background: #C7F6B6;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            max-width: 520px;
+            width: 100%;
+            margin: 2rem auto;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-bg-gradient"></div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fa-solid fa-leaf"></i>
+                <span>Eco Mitra</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link">About</a>
+                <div class="nav-link dropdown">
+                    Games <i class="fas fa-caret-down"></i>
+                    <div class="dropdown-content">
+                        <a href="sustainability-game.html"><i class="fas fa-leaf"></i> Sustainability Game</a>
+                        <a href="drag&drop.html"><i class="fas fa-hand-pointer"></i> Drag & Drop Game</a>
+                    </div>
+                </div>
+                <a href="tracking.html" class="nav-link">Track</a>
+                <div class="nav-auth">
+                    <a href="#" class="nav-link logout-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- App Logo/Brand -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-leaf logo-icon"></i>
+                <span class="logo-text">Eco Mitra</span>
+            </div>
+        </header>
+        <!-- Welcome Page -->
+        <section id="welcome-section" class="page-section animate-in">
+            <div class="welcome-card glass-card">
+                <i class="fa-solid fa-seedling welcome-icon"></i>
+                <h1>Welcome to Eco Mitra</h1>
+                <p class="welcome-desc">Instantly analyze the sustainability of any product using AI-powered image recognition. Discover eco-friendly alternatives and make smarter choices for your business or lifestyle.</p>
+                <div class="welcome-buttons">
+                    <button class="primary-btn big-btn" id="get-started-btn"><i class="fa-solid fa-arrow-right"></i> Get Started</button>
+                </div>
+            </div>
+        </section>
+        <!-- Upload Page -->
+        <section id="upload-section" class="page-section animate-in" style="display:none;">
+            <form id="upload-form" enctype="multipart/form-data" class="glass-card upload-card">
+                <div class="drop-area" id="drop-area">
+                    <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                    <span class="drop-text">Drag & Drop or <span class="file-browse">Browse</span> to upload</span>
+                    <input type="file" id="image-upload" name="image" accept="image/*" required />
+                    <span class="file-hint">Supported: JPG, PNG, JPEG, GIF</span>
+                </div>
+                <button type="submit" class="primary-btn big-btn analyze-btn"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze</button>
+            </form>
+            <div id="image-preview-container">
+                <img id="image-preview" src="" alt="Image Preview" style="display:none; max-width:260px; margin:1.5rem 0 0.5rem 0; border-radius:16px;" />
+            </div>
+            <div id="loading-spinner"></div>
+            <button class="secondary-btn back-btn" id="back-to-welcome-btn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        </section>
+        <!-- Report Page -->
+        <section id="report-section" class="page-section animate-in" style="display:none;">
+            <div class="analysis-card glass-card">
+                <div class="product-material-section">
+                    <div class="product-info">
+                        <span class="product-label"><i class="fa-solid fa-box"></i> Product:</span>
+                        <span class="product-value" id="product-value">-</span>
+                    </div>
+                    <div class="material-info">
+                        <span class="material-label"><i class="fa-solid fa-cubes"></i> Material Used:</span>
+                        <span class="material-value" id="material-value">-</span>
+                    </div>
+                </div>
+                <div class="rating-section">
+                    <h2><i class="fa-solid fa-leaf"></i> Sustainability Rating</h2>
+                    <div class="rating-display">
+                        <div class="stars">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        <span class="rating-value">-</span>
+                    </div>
+                </div>
+                <div class="justification-section">
+                    <h2><i class="fa-solid fa-circle-info"></i> Analysis</h2>
+                    <p class="justification-text"></p>
+                </div>
+                <div class="alternatives-section">
+                    <h2><i class="fa-solid fa-lightbulb"></i> Recommended Alternatives</h2>
+                    <div class="alternatives-list">
+                        <!-- Alternatives will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <button class="secondary-btn" id="back-to-upload-btn"><i class="fa-solid fa-arrow-left"></i> Analyze Another</button>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
